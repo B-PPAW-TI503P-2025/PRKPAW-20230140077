@@ -5,9 +5,11 @@ const app = express();
 const PORT = 3001;
 const morgan = require("morgan");
 
+
 // Impor router
 const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/reports");
+const authRoutes = require('./routes/auth');
 
 // // Middleware (HARUS DI ATAS ROUTE SPESIFIK)
 app.use(cors());
@@ -21,6 +23,7 @@ app.use((req, res, next) => {
 
 // Route Spesifik (HARUS DI BAWAH Body Parser)
 app.use('/api/books', bookRoutes);
+app.use('/api/auth',authRoutes)
 
 app.get('/', (req, res) => {
   res.send('Home Page for API');
