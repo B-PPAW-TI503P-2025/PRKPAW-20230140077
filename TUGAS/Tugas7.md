@@ -1,5 +1,5 @@
-[LOGIN](<SS/Login Page.png>)
+1. ![LOGIN](<SS/Login Page.png>)
 
-![REGISTER](<SS/Register Page.png>)
+2. ![REGISTER](<SS/Register Page.png>)
 
-![DASHBOARD](<SS/Dashboard Page.png>)
+3. ![DASHBOARD](<SS/Dashboard Page.png>)
