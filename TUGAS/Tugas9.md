@@ -9,3 +9,6 @@
 
 4. Presensi check-in hasil database
 ![alt text](<SS/Hasil Database berhasil.png>)
+
+5. Laporan presensi harian
+![alt text](<SS/Laporan Presensi Harian.png>)

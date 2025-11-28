@@ -1,79 +1,40 @@
-// reportController.js
 const { Presensi, User } = require("../models");
 const { Op } = require("sequelize");
 
+const { format } = require("date-fns-tz");
+
 exports.getDailyReport = async (req, res) => {
   try {
-    const { nama, tanggalMulai, tanggalSelesai } = req.query;
-    const where = {};
+    const { nama } = req.query;
 
-    // Filter tanggal: jika ada, ubah menjadi rentang full-day (00:00:00 - 23:59:59)
-    if (tanggalMulai && tanggalSelesai) {
-      const startDate = new Date(`${tanggalMulai}T00:00:00`);
-      const endDate = new Date(`${tanggalSelesai}T23:59:59`);
-
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        return res.status(400).json({
-          message:
-            "Format tanggal tidak valid. Gunakan format 'YYYY-MM-DD' untuk tanggalMulai dan tanggalSelesai.",
-        });
-      }
-
-      where.checkIn = { [Op.between]: [startDate, endDate] };
-    } else if (tanggalMulai && !tanggalSelesai) {
-      const startDate = new Date(`${tanggalMulai}T00:00:00`);
-      if (isNaN(startDate.getTime())) {
-        return res.status(400).json({ message: "Format tanggalMulai tidak valid." });
-      }
-      where.checkIn = { [Op.gte]: startDate };
-    } else if (!tanggalMulai && tanggalSelesai) {
-      const endDate = new Date(`${tanggalSelesai}T23:59:59`);
-      if (isNaN(endDate.getTime())) {
-        return res.status(400).json({ message: "Format tanggalSelesai tidak valid." });
-      }
-      where.checkIn = { [Op.lte]: endDate };
-    }
-
-    // Build include for User and optional nama filter
-    const userInclude = {
-      model: User,
-      attributes: ["id", "nama", "email"],
+    let options = {
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["nama"],
+        },
+      ],
     };
 
     if (nama) {
-      userInclude.where = {
-        nama: { [Op.like]: `%${nama}%` },
+      // Baris ini akan error jika 'Op' tidak diimpor
+      options.include[0].where = {
+        nama: {
+          [Op.like]: `%${nama}%`,
+        },
       };
-      // required:true agar join menjadi inner join (hanya record dengan user yang match)
-      userInclude.required = true;
     }
 
-    // Ambil data (urut berdasarkan checkIn desc)
-    const records = await Presensi.findAll({
-      where,
-      include: [userInclude],
-      order: [["checkIn", "DESC"]],
-    });
-
-    // Format response supaya frontend gampang pakai
-    const data = records.map((r) => ({
-      id: r.id,
-      user: r.User ? { id: r.User.id, nama: r.User.nama, email: r.User.email } : null,
-      checkIn: r.checkIn,
-      checkOut: r.checkOut,
-      createdAt: r.createdAt,
-      updatedAt: r.updatedAt,
-    }));
+    const records = await Presensi.findAll(options);
 
     res.json({
-      reportDate: new Date().toLocaleDateString("id-ID"),
-      totalData: data.length,
-      data,
+      reportDate: new Date().toLocaleDateString(),
+      data: records,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Gagal mengambil laporan",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({ message: "Gagal mengambil laporan", error: error.message });
   }
 };
