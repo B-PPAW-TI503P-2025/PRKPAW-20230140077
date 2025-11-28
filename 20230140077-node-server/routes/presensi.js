@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const presensiController = require('../controllers/presensiController');
-const { addUserData } = require('../middleware/permissionMiddleware');
+const { authenticateToken } = require('../middleware/permissionMiddleware');
 const { body, validationResult } = require('express-validator');
-router.use(addUserData);
+
+router.use(authenticateToken);
 router.post('/check-in', presensiController.CheckIn);
 router.post('/check-out', presensiController.CheckOut);
 
 router.put("/:id", presensiController.updatePresensi);
 router.delete('/:id', presensiController.deletePresensi);
 
-// ============ VALIDASI FORMAT TANGGAL SAAT UPDATE ============ //
+//VALIDASI FORMAT TANGGAL SAAT UPDATE//
 router.put(
   '/:id',
   [

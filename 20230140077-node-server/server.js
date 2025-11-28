@@ -1,51 +1,57 @@
-const bookRoutes = require('./routes/books');
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const PORT = 3001;
+require("dotenv").config({ quiet: true });
+const express = require("express");
+const cors = require("cors");
 const morgan = require("morgan");
 
+const app = express();
+const PORT = 3001;
 
-// Impor router
-const presensiRoutes = require("./routes/presensi");
-const reportRoutes = require("./routes/reports");
-const authRoutes = require('./routes/auth');
+// Cek JWT_SECRET
+if (!process.env.JWT_SECRET) {
+  console.error("ERROR: JWT_SECRET belum diset di .env");
+  process.exit(1);
+}
 
-// // Middleware (HARUS DI ATAS ROUTE SPESIFIK)
+// Middleware global
 app.use(cors());
-app.use(express.json()); // <--- Body Parser untuk JSON
+app.use(express.json());
 app.use(morgan("dev"));
+
+// Logging setiap request (opsional tapi membantu debug)
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   next();
 });
-// // END Middleware
 
-// Route Spesifik (HARUS DI BAWAH Body Parser)
-app.use('/api/books', bookRoutes);
-app.use('/api/auth',authRoutes)
+// IMPORT ROUTES
+const bookRoutes = require("./routes/books");
+const authRoutes = require("./routes/auth");
+const presensiRoutes = require("./routes/presensi");
+const reportRoutes = require("./routes/reports");
 
-app.get('/', (req, res) => {
-  res.send('Home Page for API');
+// REGISTER ROUTES
+app.use("/api/books", bookRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/presensi", presensiRoutes);       // check-in, check-out
+app.use("/api/reports", reportRoutes);         // laporan admin
+
+// Homepage
+app.get("/", (req, res) => {
+  res.send("Home Page for API");
 });
-const ruteBuku = require("./routes/books");
-app.use("/api/books", ruteBuku);
-app.use("/api/presensi", presensiRoutes);
-app.use("/api/reports", reportRoutes);
-app.listen(PORT, () => {
-  console.log(`Express server running at http://localhost:${PORT}/`);
-});
 
-// Middleware 404 - jika route tidak ditemukan
+// Middleware 404 - route tidak ditemukan
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'Endpoint not found' });
+  res.status(404).json({ message: "Endpoint not found" });
 });
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('Global Error:', err.stack);
-  res.status(500).json({ message: 'Internal Server Error' });
+  console.error("Global Error:", err.stack);
+  res.status(500).json({ message: "Internal Server Error" });
 });
 
-
- 
+// START SERVER
+app.listen(PORT, () => {
+  console.log(`Express server running at http://localhost:${PORT}/`);
+});

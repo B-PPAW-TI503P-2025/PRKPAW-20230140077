@@ -1,15 +1,13 @@
-// 1. Ganti sumber data dari array ke model Sequelize
 const { Presensi } = require("../models");
 const { format } = require("date-fns-tz");
 const timeZone = "Asia/Jakarta";
 
-// ======================= CHECK IN =======================
+//CHECK IN 
 exports.CheckIn = async (req, res) => {
   try {
-    const { id: userId, nama: userName } = req.user;
+    const { id: userId, nama: userName} = req.user;
     const waktuSekarang = new Date();
-
-    // Cek apakah user sudah check-in dan belum check-out
+    const  {latitude, longitude} = req.body 
     const existingRecord = await Presensi.findOne({
       where: { userId: userId, checkOut: null },
     });
@@ -23,13 +21,14 @@ exports.CheckIn = async (req, res) => {
     // Buat catatan baru
     const newRecord = await Presensi.create({
       userId: userId,
-      nama: userName,
       checkIn: waktuSekarang,
+      latitude: latitude || null,
+      longitude: longitude  || null,
+
     });
 
     const formattedData = {
       userId: newRecord.userId,
-      nama: newRecord.nama,
       checkIn: format(newRecord.checkIn, "yyyy-MM-dd HH:mm:ssXXX", { timeZone }),
       checkOut: null,
     };
@@ -49,10 +48,10 @@ exports.CheckIn = async (req, res) => {
   }
 };
 
-// ======================= CHECK OUT =======================
+//CHECK OUT 
 exports.CheckOut = async (req, res) => {
   try {
-    const { id: userId, nama: userName } = req.user;
+    const { id: userId, nama: userName} = req.user;
     const waktuSekarang = new Date();
 
     const recordToUpdate = await Presensi.findOne({
@@ -70,7 +69,6 @@ exports.CheckOut = async (req, res) => {
 
     const formattedData = {
       userId: recordToUpdate.userId,
-      nama: recordToUpdate.nama,
       checkIn: format(recordToUpdate.checkIn, "yyyy-MM-dd HH:mm:ssXXX", {
         timeZone,
       }),
@@ -94,7 +92,7 @@ exports.CheckOut = async (req, res) => {
   }
 };
 
-// ======================= DELETE PRESENSI =======================
+// DELETE PRESENSI 
 exports.deletePresensi = async (req, res) => {
   try {
     const { id: userId } = req.user;
@@ -123,14 +121,14 @@ exports.deletePresensi = async (req, res) => {
   }
 };
 
-// ======================= UPDATE PRESENSI =======================
+//UPDATE PRESENSI 
 exports.updatePresensi = async (req, res) => {
   try {
     const presensiId = req.params.id;
-    const { checkIn, checkOut, nama } = req.body;
+    const { checkIn, checkOut} = req.body;
 
     // Validasi jika semua field kosong
-    if (checkIn === undefined && checkOut === undefined && nama === undefined) {
+    if (checkIn === undefined && checkOut === undefined) {
       return res.status(400).json({
         message:
           "Request body tidak berisi data yang valid untuk diupdate (checkIn, checkOut, atau nama).",
@@ -169,7 +167,6 @@ exports.updatePresensi = async (req, res) => {
     // Update data
     recordToUpdate.checkIn = checkIn || recordToUpdate.checkIn;
     recordToUpdate.checkOut = checkOut || recordToUpdate.checkOut;
-    recordToUpdate.nama = nama || recordToUpdate.nama;
     await recordToUpdate.save();
 
     res.json({
