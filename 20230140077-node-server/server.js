@@ -2,6 +2,7 @@ require("dotenv").config({ quiet: true });
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const path = require('path'); 
 
 const app = express();
 const PORT = 3001;
@@ -16,6 +17,9 @@ if (!process.env.JWT_SECRET) {
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+// Folder statis untuk foto presensi
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Logging setiap request (opsional tapi membantu debug)
 app.use((req, res, next) => {

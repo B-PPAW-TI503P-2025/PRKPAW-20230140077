@@ -37,6 +37,9 @@ Presensi.init({
         type: DataTypes.DECIMAL(10, 7),
         allowNull: false,
       },
+      buktiFoto: {
+        type: DataTypes.STRING,
+      }
   }, {
     sequelize,
     modelName: 'Presensi',
