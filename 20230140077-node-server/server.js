@@ -4,6 +4,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const path = require('path'); 
 
+
 const app = express();
 const PORT = 3001;
 
@@ -32,12 +33,14 @@ const bookRoutes = require("./routes/books");
 const authRoutes = require("./routes/auth");
 const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/reports");
+const iotRoute = require("./routes/iot");
 
 // REGISTER ROUTES
 app.use("/api/books", bookRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/presensi", presensiRoutes);       // check-in, check-out
 app.use("/api/reports", reportRoutes);         // laporan admin
+app.use("/api/iot", iotRoute)
 
 // Homepage
 app.get("/", (req, res) => {
